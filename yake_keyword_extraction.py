@@ -2,18 +2,18 @@ import pandas as pd
 import os
 from dotenv import load_dotenv
 import re
-import google.generativeai as genai
-import google.api_core.exceptions
+import yake
 
 load_dotenv()
 
 
 import lyricsgenius
 import time
+import spacy
 
 
-class LyricsSummary:
-    def __init__(self, timeout=3):
+class LyricsKeywords:
+    def __init__(self, timeout=1):
         self.timeout = timeout
         token = os.getenv("GENIUS_API_KEY")
         self.genius = lyricsgenius.Genius(token)
@@ -34,19 +34,28 @@ class LyricsSummary:
 
         self.songs = self.songs.sample(frac=1).reset_index(drop=True)
 
-        genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-
-        self.model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+        self.keyword_extractor = yake.KeywordExtractor(
+            lan="en",  # Language
+            n=1,  # Maximum size of the n-gram
+            dedupLim=0.9,  # Deduplication threshold
+            top=10,
+            features=None,  # Use default features
+        )
+        self.nlp = spacy.load("en_core_web_sm")
 
         # if lyrics.csv exists, load it
-        if os.path.exists("lyrics.csv"):
-            self.lyrics_df = pd.read_csv("lyrics.csv", sep=";")
+        if os.path.exists("keywords.csv"):
+            self.lyrics_df = pd.read_csv("keywords.csv", sep=";")
         else:
             self.lyrics_df = pd.DataFrame(
-                columns=["artist", "title", "release_date", "lyrics_summary"]
+                columns=["artist", "title", "release_date", "keywords"]
             )
 
-    def get_lyrics(self, max_retries=5, wait_time=2):
+    def lemmatize_with_spacy(self, text):
+        doc = self.nlp(text)
+        return [token.lemma_ for token in doc]
+
+    def get_lyrics_keywords(self, max_retries=5, wait_time=2):
 
         # iterate over the rows
         for index, row in self.songs.iterrows():
@@ -97,60 +106,37 @@ class LyricsSummary:
 
                 result = re.sub(r"\[.*?\]", "", lyrics).strip()
 
-                while retries < max_retries:
-                    try:
+                lemmatized = self.lemmatize_with_spacy(result)
 
-                        response = self.model.generate_content(
-                            "Imagine you are listening to a song with the following lyrics:\n"
-                            + result
-                            + "\nWrite a short scientific article of 5 sentences summarizing the subject of the song. Do not include any lyrics in the article.\n"
-                            + "The article should be written in a formal and scientific style. Do not refer to the song or the artist in the article.\n"
-                            + "The lyrics is basically the source material for the article and should not be included in the article itself.\n"
-                            + "Do not reference, that your article is based on a song or lyrics.\n"
-                        )
-                        retries = 0
-                        wait_time = 2
-                        break
+                lemmatized = " ".join(lemmatized)
+                # replace the new lines with spaces
+                lemmatized = lemmatized.replace("\n", " ")
+                # remove ( and ) from the text
+                lemmatized = lemmatized.replace("(", "").replace(")", "")
 
-                    except google.api_core.exceptions.ResourceExhausted:
-                        retries += 1
-                        print(
-                            f"ResourceExhausted error for {title} by {artist}. Retrying in {wait_time} seconds"
-                        )
-                        time.sleep(wait_time)
-                        wait_time *= 2
-                        continue
+                keywords = self.keyword_extractor.extract_keywords(lemmatized)
 
-                if retries == max_retries:
-                    raise Exception("Max gemini retries reached")
-                # add a new row to the dataframe
-                new_row = pd.DataFrame(
-                    [
-                        {
-                            "artist": artist,
-                            "title": title,
-                            "release_date": release_date,
-                            "lyrics_summary": response.text,
-                        }
-                    ]
+                keywords_res = [keyword for keyword, _ in keywords]
+
+                keywords_df = pd.DataFrame(
+                    {
+                        "artist": [artist],
+                        "title": [title],
+                        "release_date": [release_date],
+                        "keywords": [keywords_res],
+                    }
                 )
 
-                self.lyrics_df = pd.concat([self.lyrics_df, new_row], ignore_index=True)
+                self.lyrics_df = pd.concat([self.lyrics_df, keywords_df])
 
-                t2 = time.time()
-
-                duration = t2 - t1
-                print(
-                    f"Lyrics for {title} by {artist} were processed in {duration} seconds"
-                )
-
+                duration = time.time() - t1
                 if duration < self.timeout:
                     time.sleep(self.timeout - duration)
 
                 if index % 10 == 0:
-                    self.lyrics_df.to_csv("lyrics.csv", index=False, sep=";")
+                    self.lyrics_df.to_csv("keywords.csv", index=False, sep=";")
 
 
 if __name__ == "__main__":
-    lyrics_summary = LyricsSummary(timeout=3)
-    lyrics_summary.get_lyrics()
+    lyrics_summary = LyricsKeywords()
+    lyrics_summary.get_lyrics_keywords()
