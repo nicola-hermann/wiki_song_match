@@ -56,8 +56,6 @@ for index, row in tqdm(songs_df.iterrows()):
 wiki_embeddings = np.array(list(wiki_embeddings_dict.values()))
 song_embeddings = np.array(list(song_embeddings_dict.values()))
 
-breakpoint()
-
 all_embeddings = np.vstack([wiki_embeddings, song_embeddings])
 labels = ["Wikipedia"] * len(wiki_embeddings) + ["Lyrics"] * len(song_embeddings)
 
