@@ -2,6 +2,8 @@ import pandas as pd
 import yake
 import wikipedia
 
+mode = "pc"  # or "local"
+
 from transformers import BertTokenizer, BertModel
 import torch
 import torch.nn.functional as F
@@ -11,13 +13,28 @@ from nltk.corpus import stopwords
 import spacy
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
+from dotenv import load_dotenv
+import os
 
-lyrics_df = pd.read_feather("data\lyrics_embeddings.feather")
-lyrics_embeddings = lyrics_df["embedding"].values
-lyrics_embeddings = np.vstack(lyrics_embeddings)
+load_dotenv()
 
-knn = NearestNeighbors(n_neighbors=5)
-knn.fit(lyrics_embeddings)
+if mode == "local":
+    lyrics_df = pd.read_feather("data\lyrics_embeddings.feather")
+    lyrics_embeddings = lyrics_df["embedding"].values
+    lyrics_embeddings = np.vstack(lyrics_embeddings)
+
+    knn = NearestNeighbors(n_neighbors=5)
+    knn.fit(lyrics_embeddings)
+
+else:
+    from pinecone import Pinecone
+
+    api_key = os.environ.get("PINECONE_KEY")
+    pc = Pinecone(api_key=api_key)
+    index_name = "wiki-song-match"
+    index = pc.Index(index_name)
+    namespace = "lyrics_embedding"
+
 
 # Download necessary resources
 nltk.download("stopwords")
@@ -82,10 +99,10 @@ def main(article):
     )
 
     keywords = kw_extractor.extract_keywords(cleaned_text)
-    print(keywords)
     weights = [x[1] for x in keywords]
     if len(keywords) < 10:
         return
+
     keywords = [x[0] for x in keywords]
     torch_weights = F.normalize(torch.tensor(weights), p=1, dim=0).unsqueeze(1)
 
@@ -105,14 +122,29 @@ aritcle = "World War II"
 result = main(aritcle)
 if result is not None:
     keywords, weights, combined_embedding = main(aritcle)
+    if mode == "local":
+        # Find the nearest neighbors
+        query_embedding = np.array([combined_embedding])
+        distances, indices = knn.kneighbors(query_embedding)
 
-    # Find the nearest neighbors
-    query_embedding = np.array([combined_embedding])
-    distances, indices = knn.kneighbors(query_embedding)
+        # Get the metadata for the nearest neighbors
+        nearest_neighbors = lyrics_df.iloc[indices[0]]
+        print(nearest_neighbors)
+        # print(nearest_neighbors["artist_name", "track_name", "release_date", "keywords"])
+        print(distances[0])
+        breakpoint()
+    else:
 
-    # Get the metadata for the nearest neighbors
-    nearest_neighbors = lyrics_df.iloc[indices[0]]
-    print(nearest_neighbors)
-    # print(nearest_neighbors["artist_name", "track_name", "release_date", "keywords"])
-    print(distances[0])
-    breakpoint()
+        combined_embedding = [float(value) for value in combined_embedding]
+
+        results = index.query(
+            vector=[combined_embedding],
+            top_k=5,
+            namespace=namespace,
+            include_values=False,
+            include_metrics=True,
+            include_metadata=True,
+        )
+        breakpoint()
+else:
+    print("Error: No keywords extracted")
