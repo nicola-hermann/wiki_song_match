@@ -1,3 +1,4 @@
+wheel
 pandas
 yake
 wikipedia
@@ -11,4 +12,5 @@ plotly
 python-dotenv
 tqdm
 flask
-uvicorn
+gunicorn
+pinecone

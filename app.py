@@ -12,11 +12,6 @@ import nltk
 from nltk.corpus import stopwords
 import re
 
-# from sklearn.neighbors import NearestNeighbors
-# from sklearn.manifold import TSNE
-# import pandas as pd
-# import plotly.express as px
-
 load_dotenv()
 app = Flask(__name__)
 
