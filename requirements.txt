@@ -1,0 +1,14 @@
+pandas
+yake
+wikipedia
+transformers
+torch
+scikit-learn
+nltk
+spacy
+numpy
+plotly
+python-dotenv
+tqdm
+flask
+uvicorn

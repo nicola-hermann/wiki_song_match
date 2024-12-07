@@ -4,10 +4,13 @@ import spacy
 import yake
 from transformers import AutoTokenizer, AutoModel
 import torch
+import torch.nn.functional as F
 from pinecone import Pinecone
 import os
 from dotenv import load_dotenv
-import numpy as np
+import nltk
+from nltk.corpus import stopwords
+import re
 
 # from sklearn.neighbors import NearestNeighbors
 # from sklearn.manifold import TSNE
@@ -30,114 +33,106 @@ tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 model = AutoModel.from_pretrained("bert-base-uncased")
 
 api_key = os.environ.get("PINECONE_KEY")
-
 pc = Pinecone(api_key=api_key)
 index_name = "wiki-song-match"
 index = pc.Index(index_name)
+namespace = "lyrics_embedding"
 
-# lyrics_list = np.load("data/lyrics_list.npy", allow_pickle=True)
-# lyrics_embeddings = np.array([lyrics["values"] for lyrics in lyrics_list])
-# metadata = [lyrics["metadata"] for lyrics in lyrics_list]
+nltk.download("stopwords")
+nltk.download("punkt_tab")
 
-# knn = NearestNeighbors(n_neighbors=5)
-# knn.fit(lyrics_embeddings)
-# tsne = TSNE(n_components=2, random_state=42)
+# Load English stop words
+stop_words = set(stopwords.words("english"))
 
-
-def lemmatize_with_spacy(text):
-    doc = nlp(text)
-    return [token.lemma_ for token in doc]
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+model = AutoModel.from_pretrained("bert-base-uncased")
 
 
-def get_keyword_embeddings(keywords):
+def clean_text(text):
     """
-    Get embeddings for a list of keywords using a pretrained BERT model.
-
-    Args:
-        keywords (list): List of keywords.
-
-    Returns:
-        torch.Tensor: A tensor of embeddings for the keywords (shape: len(keywords) x hidden_size).
+    Cleans text by:
+    1. Removing symbols and numbers
+    2. Removing stop words
+    3. Lemmatizing to canonical form
     """
-    if not keywords:
-        return torch.empty(0)  # Return an empty tensor if no keywords are provided
+    # Step 1: Remove symbols and numbers
+    text = re.sub(r"[^a-zA-Z\s]", "", text)  # Keep only alphabets
+    text = text.lower()  # Convert to lowercase
 
-    inputs = tokenizer(keywords, padding=True, truncation=True, return_tensors="pt")
-    with torch.no_grad():
-        outputs = model(**inputs)
-        # Use the [CLS] token's embedding as the representation for each keyword
-        cls_embeddings = outputs.last_hidden_state[:, 0, :]
-    return cls_embeddings
+    # Step 2: Tokenize and remove stop words
+    tokens = nltk.word_tokenize(text)
+    tokens = [word for word in tokens if word not in stop_words]
+
+    # Step 3: Lemmatize the remaining words
+    lemmatized_tokens = []
+    for token in tokens:
+        doc = nlp(token)
+        lemmatized_tokens.append(doc[0].lemma_)
+
+    # Join tokens back into a string
+    cleaned_text = " ".join(lemmatized_tokens)
+
+    return cleaned_text
 
 
-@app.route("/<path:article>")
-def get_song_match(article):
+def get_embedding(keyword):
+    inputs = tokenizer(keyword, return_tensors="pt", truncation=True, padding=True)
+    outputs = model(**inputs)
+    return outputs.last_hidden_state[:, 0, :]  # Use [CLS] token embedding
+
+
+def extract_wiki_keywords(article):
     try:
-        full_article = wikipedia.page(article)
-    except Exception as e:
-        return f"Error: {e}"
+        text = wikipedia.page(article).content
+    except:
+        return
 
-    lemmatized_article = lemmatize_with_spacy(full_article.content)
-    keywords = keyword_extractor.extract_keywords(" ".join(lemmatized_article))
-    keywords_res = [keyword for keyword, _ in keywords]
-    breakpoint()
-    embeddings = get_keyword_embeddings(keywords_res)
+    cleaned_text = clean_text(text)
 
-    embeddings_1dim = embeddings.mean(dim=0)
+    kw_extractor = yake.KeywordExtractor(
+        lan="en", n=1, dedupLim=0.9, windowsSize=1, top=10
+    )
 
-    embedding_normalized = embeddings_1dim / np.linalg.norm(embeddings_1dim)
-    # embedding_reshaped = embedding_normalized.reshape(1, -1)
+    keywords = kw_extractor.extract_keywords(cleaned_text)
+    weights = [x[1] for x in keywords]
+    if len(keywords) < 10:
+        return
 
-    # distances, indices = knn.kneighbors(embedding_reshaped)
+    keywords = [x[0] for x in keywords]
+    torch_weights = F.normalize(torch.tensor(weights), p=1, dim=0).unsqueeze(1)
 
-    # response = [metadata[index] for index in indices[0]]
+    embeddings = torch.cat([get_embedding(k) for k in keywords], dim=0)  # (10, 768)
 
-    # create a TSNE plot with the lyrics embeddings in one color and the wikipedia embeddings in another color
-    # all_embeddings = np.vstack([lyrics_embeddings, embedding_reshaped])
-    # labels = ["Lyrics"] * len(lyrics_embeddings) + ["Wikipedia"]
-    # names = np.array(
-    #     [lyrics["metadata"]["title"] for lyrics in lyrics_list] + [article]
-    # )
+    # Compute weighted sum
+    combined_embedding = torch.sum(torch_weights * embeddings, dim=0)  # (768,)
 
-    # embeddings_2d = tsne.fit_transform(all_embeddings)
+    # Normalize the final embedding
+    combined_embedding = F.normalize(combined_embedding, p=2, dim=0).tolist()
 
-    # df = pd.DataFrame(
-    #     {
-    #         "TSNE-1": embeddings_2d[:, 0],
-    #         "TSNE-2": embeddings_2d[:, 1],
-    #         "Domain": labels,
-    #         "Name": names,
-    #     }
-    # )
+    # Concatenate with the new dataframe
+    return keywords, torch_weights.tolist(), combined_embedding
 
-    # # Plot with Plotly, showing names on hover
-    # fig = px.scatter(
-    #     df,
-    #     x="TSNE-1",
-    #     y="TSNE-2",
-    #     color="Domain",
-    #     title="t-SNE Visualization of Embeddings",
-    #     labels={"color": "Domain"},
-    #     hover_data={"Name": True, "TSNE-1": False, "TSNE-2": False},
-    # )  # Show only 'Name' on hover
-    # fig.update_traces(marker=dict(size=5, opacity=0.8))
-    # fig.update_layout(legend_title_text="Domains")
 
-    # # Show plot
-    # fig.show()
-    # breakpoint()
+@app.route("/match/<path:article>", defaults={"num": 1})
+@app.route("/match/<path:article>/<int:num>")
+def get_song_match(article, num):
+    result = extract_wiki_keywords(article)
+    if result is None:
+        return "No wikipedia page found", 404
 
-    recommendations = index.query(
-        namespace="lyrics",
-        vector=embedding_normalized.tolist(),
-        top_k=3,
+    keywords, weights, embedding = result
+    embedding = [float(x) for x in embedding]
+
+    recommendation = index.query(
+        queries=[embedding],
+        top_k=num,
+        namespace=namespace,
         include_metadata=True,
         include_values=False,
     )
 
-    response = dict(recommendations["matches"][0]["metadata"])
-
-    return response
+    # Create a respone object TODO
+    response = []
 
 
 if __name__ == "__main__":
