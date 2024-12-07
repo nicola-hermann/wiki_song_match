@@ -145,6 +145,18 @@ if result is not None:
             include_metrics=True,
             include_metadata=True,
         )
-        breakpoint()
+
+        return_dict = {"data": []}
+        for result in results.matches:
+            return_dict["data"].append(
+                {
+                    "title": result.metadata["title"],
+                    "artist": result.metadata["artist"],
+                    "release_date": result.metadata["release_date"],
+                    "keywords": result.metadata["keywords"],
+                    "score": result.score,
+                }
+            )
+        print(return_dict)
 else:
     print("Error: No keywords extracted")

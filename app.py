@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 import wikipedia
 import spacy
 import yake
@@ -116,23 +116,40 @@ def extract_wiki_keywords(article):
 @app.route("/match/<path:article>", defaults={"num": 1})
 @app.route("/match/<path:article>/<int:num>")
 def get_song_match(article, num):
+    if num > 10:
+        return (
+            jsonify({"error": "Number of recommendations should be less than 10"}),
+            400,
+        )
     result = extract_wiki_keywords(article)
     if result is None:
-        return "No wikipedia page found", 404
+        return jsonify({"error": "No wikipedia page found"}), 404
 
-    keywords, weights, embedding = result
+    keywords, _, embedding = result
     embedding = [float(x) for x in embedding]
 
     recommendation = index.query(
-        queries=[embedding],
+        vector=[embedding],
         top_k=num,
         namespace=namespace,
         include_metadata=True,
         include_values=False,
     )
 
-    # Create a respone object TODO
-    response = []
+    return_dict = {"data": []}
+    for result in recommendation.matches:
+        return_dict["data"].append(
+            {
+                "title": result.metadata["title"],
+                "artist": result.metadata["artist"],
+                "release_date": result.metadata["release_date"],
+                "lyrics_keywords": result.metadata["keywords"],
+                "score": result.score,
+                "wiki_keywords": keywords,
+            }
+        )
+
+    return jsonify(return_dict), 200
 
 
 if __name__ == "__main__":
