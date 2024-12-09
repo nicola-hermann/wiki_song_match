@@ -2,8 +2,8 @@ wheel
 pandas
 yake
 wikipedia
-transformers
 torch
+transformers
 scikit-learn
 nltk
 spacy

@@ -3,8 +3,7 @@ import wikipedia
 import spacy
 import yake
 from transformers import AutoTokenizer, AutoModel
-import torch
-import torch.nn.functional as F
+import numpy as np
 from pinecone import Pinecone
 import os
 from dotenv import load_dotenv
@@ -12,7 +11,17 @@ import nltk
 from nltk.corpus import stopwords
 import re
 
-load_dotenv()
+env_path = os.path.join(os.getcwd(), ".env")
+load_dotenv(env_path)
+
+# print all files at the root of the project
+cwd = os.getcwd()
+print(f"FILES: {os.listdir(cwd)}")
+
+api_key = os.environ.get("PINECONE_KEY")
+if not api_key:
+    raise ValueError("PINECONE_KEY environment variable not set")
+
 app = Flask(__name__)
 
 nlp = spacy.load("en_core_web_sm")
@@ -27,7 +36,6 @@ keyword_extractor = yake.KeywordExtractor(
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 model = AutoModel.from_pretrained("bert-base-uncased")
 
-api_key = os.environ.get("PINECONE_KEY")
 pc = Pinecone(api_key=api_key)
 index_name = "wiki-song-match"
 index = pc.Index(index_name)
@@ -73,7 +81,9 @@ def clean_text(text):
 def get_embedding(keyword):
     inputs = tokenizer(keyword, return_tensors="pt", truncation=True, padding=True)
     outputs = model(**inputs)
-    return outputs.last_hidden_state[:, 0, :]  # Use [CLS] token embedding
+    return (
+        outputs.last_hidden_state[:, 0, :].detach().numpy().flatten().tolist()
+    )  # Use [CLS] token embedding
 
 
 def extract_wiki_keywords(article):
@@ -94,18 +104,21 @@ def extract_wiki_keywords(article):
         return
 
     keywords = [x[0] for x in keywords]
-    torch_weights = F.normalize(torch.tensor(weights), p=1, dim=0).unsqueeze(1)
+    np_weights = np.array(weights)
+    np_weights = np_weights / np.sum(np_weights)  # Normalize weights
 
-    embeddings = torch.cat([get_embedding(k) for k in keywords], dim=0)  # (10, 768)
+    embeddings = np.array([get_embedding(k) for k in keywords])  # (10, 768)
 
     # Compute weighted sum
-    combined_embedding = torch.sum(torch_weights * embeddings, dim=0)  # (768,)
+    combined_embedding = np.sum(
+        np_weights[:, np.newaxis] * embeddings, axis=0
+    )  # (768,)
 
     # Normalize the final embedding
-    combined_embedding = F.normalize(combined_embedding, p=2, dim=0).tolist()
+    combined_embedding = combined_embedding / np.linalg.norm(combined_embedding)
 
     # Concatenate with the new dataframe
-    return keywords, torch_weights.tolist(), combined_embedding
+    return keywords, np_weights.tolist(), combined_embedding.tolist()
 
 
 @app.route("/match/<path:article>", defaults={"num": 1})
