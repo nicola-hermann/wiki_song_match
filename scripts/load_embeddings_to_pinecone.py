@@ -25,7 +25,7 @@ index_name = "wiki-song-match"
 if not pc.has_index(index_name):
     pc.create_index(
         name=index_name,
-        dimension=768,  # Replace with your model dimensions
+        dimension=768,
         spec=ServerlessSpec(cloud="aws", region="us-east-1"),
     )
 
@@ -58,7 +58,6 @@ batch_size = 500
 for ids_vectors_chunk in chunks(lyrics_list, batch_size=200):
     index.upsert(vectors=ids_vectors_chunk, namespace="lyrics_embedding")
 
-
-time.sleep(10)  # Wait for the upserted vectors to be indexed
-
+time.sleep(10)
 print(index.describe_index_stats())
+print("Successfully loaded embeddings to Pinecone!")
