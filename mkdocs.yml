@@ -1,1 +1,3 @@
 site_name: Wiki Song Match Documentation
+theme:
+  name: readthedocs
