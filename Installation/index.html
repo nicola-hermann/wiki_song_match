@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Installation - Wiki Song Match Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Installation";
+        var mkdocs_page_input_path = "Installation.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Wiki Song Match Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Welcome to MkDocs</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Installation</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#full-pipeline">Full Pipeline</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#guessing-game">Guessing Game</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../references/">References</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Wiki Song Match Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="installation">Installation</h1>
+<p>There are 2 "sub-repos" inside this repository that you can install:</p>
+<ul>
+<li>Full pipeline (Creating your own Vector Databse)</li>
+<li>Guessing game (Find a better song than there is in the database)</li>
+</ul>
+<h2 id="full-pipeline">Full Pipeline</h2>
+<p>There are alot of ways to install a repository. The following instructions are testen on Windows and MacOS.</p>
+<p>1) Install python: This repository was built and tested on python 3.11.10</p>
+<p>2) Create virtual environment and install requirements:</p>
+<p><strong>Windows</strong></p>
+<pre><code>python -m venv .venv
+".venv/Scripts/activate"
+pip install -r requirements_full.txt
+</code></pre>
+<p><strong>MacOS</strong></p>
+<pre><code>python -m venv .venv
+source .venv/bin/activate
+pip insatll -r requirements_full.txt
+</code></pre>
+<p>3) Download dataset from <a href="https://data.mendeley.com/datasets/3t9vbwxgr5/3">here.</a> Save it as <code>dataset.csv</code> and put it inside the data folder. Otherwise, adapt the path inside <code>load_embeddings_to_pineconde.py</code> </p>
+<p>4) Create an account in <a href="https://www.pinecone.io/">Pinecone</a> and create an <a href="https://docs.pinecone.io/guides/projects/manage-api-keys">API key</a>.</p>
+<p>5) Create a <code>.env</code> file and add your API key inside the file. It should look like this:</p>
+<pre><code>PINECONE_KEY=enterYourKeyHere
+</code></pre>
+<p>6) Load your data inside the vector database by running:</p>
+<pre><code>python scripts/generate_lyrics_embeddings.py
+python scripts/load_embeddings_to_pinecone.py
+</code></pre>
+<p><strong>This process can take several hours!</strong></p>
+<p>Note: the first script can be interruped and resumed any time. Progress is saved every 100 steps.</p>
+<p>7) Try the matching by running: <code>python get_match.py -a &lt;your-article&gt;</code>. If you don't pass an article, a random wikipedia article is taken.</p>
+<p>8) Optional: Create your own TSNE plot:</p>
+<pre><code>python scripts/generate_wikipedia_embeddings.py
+python scripts/create_tsne_plot.py
+</code></pre>
+<p><strong>This process can take several hours!</strong></p>
+<p>Note: the first script can be interruped and resumed any time. Progress is saved every 100 steps.</p>
+<h2 id="guessing-game">Guessing Game</h2>
+<p><em>If you already did the Full Pipeline installation, skip to step 3.</em></p>
+<p>There are alot of ways to install a repository. The following instructions are testen on Windows and MacOS.</p>
+<p>1) Install python: This repository was built and tested on python 3.11.10</p>
+<p>2) Create virtual environment and install requirements:</p>
+<p><strong>Windows</strong></p>
+<pre><code>python -m venv .venv
+".venv/Scripts/activate"
+pip install -r requirements_game.txt
+</code></pre>
+<p><strong>MacOS</strong></p>
+<pre><code>python -m venv .venv
+source .venv/bin/activate
+pip insatll -r requirements_game.txt
+</code></pre>
+<p>3) Run the game with <code>python guessing_game.py</code></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Welcome to MkDocs"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../references/" class="btn btn-neutral float-right" title="References">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../references/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
