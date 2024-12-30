@@ -30,3 +30,7 @@ In here you find links used during research and implementation.
 - [ChatGPT](https://chatgpt.com/)
 - [Github Copilot](https://github.com/features/copilot)
 - [Plotly](https://plotly.com/) in combination with [TSNE](https://scikit-learn.org/1.5/modules/generated/sklearn.manifold.TSNE.html)
+
+
+
+https://upload.wikimedia.org/wikipedia/commons/c/cf/Artificial_Intelligence_Word_Cloud.png
