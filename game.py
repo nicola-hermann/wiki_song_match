@@ -24,6 +24,7 @@ SMALL_FONT = pygame.font.Font(None, 28)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
+BLUE = (0, 120, 215)
 
 # Load the background image
 BACKGROUND_IMAGE = pygame.image.load(r"assets\blurred_background.png")
@@ -41,7 +42,7 @@ overlay.fill((0, 0, 0))  # Black overlay
 class TextBox:
     def __init__(self, x, y, w, h, placeholder):
         self.rect = pygame.Rect(x, y, w, h)
-        self.color = (255, 255, 255, 200)  # Semi-transparent white
+        self.color = GRAY
         self.text = ""
         self.placeholder = placeholder
         self.active = False
@@ -56,10 +57,9 @@ class TextBox:
                 self.text += event.unicode
 
     def draw(self, screen):
-        # Draw filled rounded rectangle
-        pygame.draw.rect(screen, (200, 200, 200), self.rect, border_radius=10)
-        # Draw border
-        pygame.draw.rect(screen, BLACK, self.rect, 2, border_radius=10)
+        border_color = BLUE if self.active else BLACK
+        pygame.draw.rect(screen, self.color, self.rect, border_radius=10)
+        pygame.draw.rect(screen, border_color, self.rect, 2, border_radius=10)
         text_surface = FONT.render(self.text or self.placeholder, True, BLACK)
         screen.blit(text_surface, (self.rect.x + 10, self.rect.y + 10))
 
@@ -146,10 +146,10 @@ def display_result_screen(screen, result, player_artist, player_title):
                 elif replay_button_rect.collidepoint(event.pos):
                     replay_button_clicked = True  # Replay the game
 
-            # Handle escape key (optional)
-            if event.type == KEYDOWN and event.key == K_ESCAPE:
-                stop_button_clicked = True
-                pygame.quit()
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    stop_button_clicked = True
+                    pygame.quit()
 
     # If "Replay" is clicked, restart the game
     if replay_button_clicked:
@@ -178,13 +178,28 @@ def calculate_result(api1_result, api2_result):
     artist = res1["artist"]
     title = res1["title"]
 
-    player_embedding = res2["embedding"]
+    player_embedding = res2.get("embedding")
+    if player_embedding is None:
+        raise NameError("Song could not be found on lyrics.com")
 
     # Calculate the euclidean distance between the two embeddings
     distance1 = np.linalg.norm(np.array(lyrics_embedding) - np.array(wiki_embedding))
     distance2 = np.linalg.norm(np.array(player_embedding) - np.array(wiki_embedding))
 
     return artist, title, distance1, distance2
+
+
+def submit(song, artist, api2_result):
+    thread2 = threading.Thread(
+        target=lyrics_request,
+        args=(
+            f"{BASE_URL}/lyrics_keywords",
+            {"song": song, "artist": artist},
+            api2_result,
+        ),
+    )
+    thread2.start()
+    return thread2
 
 
 # Button
@@ -202,6 +217,8 @@ def start_game():
     # Textboxes
     title_box = TextBox(200, 400, 400, 40, "Enter Title")
     artist_box = TextBox(200, 460, 400, 40, "Enter Artist")
+    textboxes = [title_box, artist_box]
+    current_textbox = 0
     # Track the state of both API calls
     thread1_finished = False
     thread2_started = False
@@ -236,20 +253,20 @@ def start_game():
         title_surface = FONT.render(f"Wikipedia Article: {article_title}", True, WHITE)
         screen.blit(title_surface, (20, 20))
 
-        summary_y_start = 60  # Space below the title
+        summary_y_start = 60
         render_multiline_text(
             article_summary,
             20,
             summary_y_start,
-            WIDTH - 40,  # Width accounting for padding
+            WIDTH - 40,
             SMALL_FONT,
             WHITE,
             screen,
         )
 
-        # Draw textboxes
-        title_box.draw(screen)
-        artist_box.draw(screen)
+        for i, box in enumerate(textboxes):
+            box.active = i == current_textbox
+            box.draw(screen)
 
         # Draw the rounded button
         pygame.draw.rect(screen, button_color, button_rect, border_radius=10)
@@ -263,33 +280,43 @@ def start_game():
             if event.type == QUIT:
                 running = False
 
-            title_box.handle_event(event)
-            artist_box.handle_event(event)
+            if event.type == KEYDOWN:
+                if event.key == K_TAB:
+                    current_textbox = (current_textbox + 1) % len(textboxes)
+                elif event.key == K_RETURN:  # Press Enter to submit
+                    if title_box.text and artist_box.text:
+                        if not thread2_started:
+                            thread2 = submit(
+                                title_box.text, artist_box.text, api2_result
+                            )
+                            thread2_started = True
+
+            textboxes[current_textbox].handle_event(event)
 
             if event.type == MOUSEBUTTONDOWN:
                 if button_rect.collidepoint(event.pos):
                     if title_box.text and artist_box.text:
-                        # Submit data and make the second API call
-                        thread2 = threading.Thread(
-                            target=lyrics_request,
-                            args=(
-                                f"{BASE_URL}/lyrics_keywords",
-                                {"song": title_box.text, "artist": artist_box.text},
-                                api2_result,
-                            ),
-                        )
-                        thread2.start()
-                        thread2_started = True
+                        if not thread2_started:
+                            thread2 = submit(
+                                title_box.text, artist_box.text, api2_result
+                            )
+                            thread2_started = True
 
         # Check the state of thread1
         if not thread1.is_alive() and not thread1_finished:
             thread1_finished = True
-            print("API1 finished:", api1_result["response"])
+            try:
+                api_res = api1_result["response"]
+            except Exception as e:
+                print("API not availlable")
 
         # Check the state of thread2
         if thread2_started and not thread2.is_alive() and not thread2_finished:
             thread2_finished = True
-            print("API2 finished:", api2_result["response"])
+            try:
+                api_res = api2_result["response"]
+            except Exception as e:
+                print("API not availlable")
 
         # If both threads are done, calculate the result
         if thread1_finished and thread2_finished:
