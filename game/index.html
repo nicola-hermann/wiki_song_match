@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>References - Wiki Song Match Documentation</title>
+    <title>Game - Wiki Song Match Documentation</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "References";
-        var mkdocs_page_input_path = "references.md";
+        var mkdocs_page_name = "Game";
+        var mkdocs_page_input_path = "game.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -51,30 +51,18 @@
                 <li class="toctree-l1"><a class="reference internal" href="../documentation/">Research and Documentation</a>
                 </li>
               </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../game/">Game</a>
-                </li>
-              </ul>
               <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="#">References</a>
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Game</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#used-in-final-product">Used in final product</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#lyrics">Lyrics</a>
+    <li class="toctree-l2"><a class="reference internal" href="#how-it-works">How it Works</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#storage-and-database">Storage and Database</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#preprocessing-of-text">Preprocessing of Text</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#game">Game</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#deployment">Deployment</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#used-during-research">Used during research</a>
+    <li class="toctree-l2"><a class="reference internal" href="#disclaimer">Disclaimer</a>
     </li>
     </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../references/">References</a>
                 </li>
               </ul>
       </div>
@@ -91,7 +79,7 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-      <li class="breadcrumb-item active">References</li>
+      <li class="breadcrumb-item active">Game</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -100,48 +88,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="references">References</h1>
-<p>In here you find links used during research and implementation.</p>
-<h2 id="used-in-final-product">Used in final product</h2>
-<h3 id="lyrics">Lyrics</h3>
-<ul>
-<li><a href="https://sol.sbc.org.br/index.php/eniac/article/view/12155">Paper</a> used for preprocessing steps and <a href="https://data.mendeley.com/datasets/3t9vbwxgr5/3">dataset</a></li>
-<li><a href="https://www.lyrics.com/">Lyrics.com</a> and their <a href="https://www.lyrics.com/lyrics_api.php">API</a></li>
-</ul>
-<h3 id="storage-and-database">Storage and Database</h3>
-<ul>
-<li><a href="https://www.pinecone.io/">Pinecone</a></li>
-<li><a href="https://pandas.pydata.org/">Pandas</a></li>
-</ul>
-<h3 id="preprocessing-of-text">Preprocessing of Text</h3>
-<ul>
-<li><a href="https://github.com/LIAAD/yake">Yake Keyword Extractor</a></li>
-<li><a href="https://spacy.io/">Spacy</a></li>
-<li><a href="https://www.nltk.org/">nltk</a></li>
-<li><a href="https://huggingface.co/docs/transformers/index">Transformer Library (BERT)</a></li>
-</ul>
-<h3 id="game">Game</h3>
-<ul>
-<li><a href="https://www.pygame.org/wiki/GettingStarted">Pygame</a></li>
-<li><a href="https://upload.wikimedia.org/wikipedia/commons/c/cf/Artificial_Intelligence_Word_Cloud.png">Background Image</a></li>
-</ul>
-<h3 id="deployment">Deployment</h3>
-<ul>
-<li><a href="https://lesliemwubbel.com/setting-up-a-flask-app-and-deploying-it-via-google-cloud/">Google Cloud Deployment</a></li>
-</ul>
-<h2 id="used-during-research">Used during research</h2>
-<ul>
-<li><a href="https://ai.google.dev/api?hl=de&amp;lang=python">Google Gemini</a></li>
-<li><a href="https://spotipy.readthedocs.io/en/2.24.0/">Spotify Python API</a></li>
-<li><a href="https://chatgpt.com/">ChatGPT</a></li>
-<li><a href="https://github.com/features/copilot">Github Copilot</a></li>
-<li><a href="https://plotly.com/">Plotly</a> in combination with <a href="https://scikit-learn.org/1.5/modules/generated/sklearn.manifold.TSNE.html">TSNE</a></li>
-</ul>
+                <h1 id="game">Game</h1>
+<p>Thanks to Laura's question after my final presentation, that gave me the idea for this game.</p>
+<h2 id="how-it-works">How it Works</h2>
+<p>After starting the game, you are presented with a random Wikipedia article and its summary. It is your goal to find a song that matches this Wikipedia article as close as possible with its lyrics. Enter the song and artist name in each of the text-fields. When you press "Submit", your song gets searched and processed like every other song in the database. Meanwhile, a bot also selects a song from the 25'000 Songs, that are in the database. When the process is finished, you will be prompted with a screen, that shows you the distance between the embeddings from your song choice to the wikipedia article. The same goes for the bot. Whoever is closer Winns!</p>
+<h2 id="disclaimer">Disclaimer</h2>
+<p>This game has been coded in 1 day due to my limited time at the moment. You might experience crashes and unhandled exceptions, but those are to be expected. This game is mainly here to showcase the "tech" and interact in a fun way with it. Also im not a designer ;) </p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../game/" class="btn btn-neutral float-left" title="Game"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../documentation/" class="btn btn-neutral float-left" title="Research and Documentation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../references/" class="btn btn-neutral float-right" title="References">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -164,8 +122,10 @@
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../game/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../documentation/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
+    
+      <span><a href="../references/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
