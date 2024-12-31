@@ -1,0 +1,5 @@
+pygame
+numpy
+requests
+wikipedia
+pillow

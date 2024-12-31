@@ -84,5 +84,5 @@ There are alot of ways to install a repository. The following instructions are t
     source .venv/bin/activate
     pip insatll -r requirements_game.txt
 
-3) Run the game with `python guessing_game.py`
+3) Run the game with `python game.py`
     
