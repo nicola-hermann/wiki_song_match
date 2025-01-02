@@ -167,10 +167,10 @@ def match_request(url, result):
 
 
 def lyrics_request(url, data, result):
-    json_data = json.dumps(data)
-    print(json_data)
     response = requests.post(
-        url, data=json_data, timeout=100, headers={"Content-Type": "application/json"}
+        url,
+        json=data,
+        timeout=100,
     )
     result["response"] = response.json()
 
