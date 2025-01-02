@@ -52,6 +52,6 @@ The final matching is rather easy. We only need a good metric to tell us which l
 
 To do the matching, I actually use a vector database called Pinecone. Pinecone is not only used to store all my 25,000 lyrics embeddings, but you can also query for an embedding and get the top k closest to the specified embedding. This basically gets the job done for the matching part.
 
-## Gussing Game
+## Guessing Game
 
 Thanks to the questioning of Laura at my final presentation, I decided to create a super simple guessing game where you try to outmatch the "AI" and find a more suitable song for a random Wikipedia article. You can find more about that on the installation and game tab.
