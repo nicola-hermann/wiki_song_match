@@ -124,7 +124,7 @@
 <h3 id="keywords-to-the-rescue">Keywords to the Rescue</h3>
 <p>Clearly, a new approach was needed. I didn't want to change the whole pipeline, though, because I had already spent a lot of time researching and building pipelines. My research led me to a <a href="https://sol.sbc.org.br/index.php/eniac/article/view/12155">Paper</a> hat did "Temporal Analysis and Visualization of Music." Inspired by this paper, I gave the keyword-based approach a go. Also, I used their dataset, which already has lemmatized lyrics of about 25,000 songs, so no more lyrics scraping on websites was required.</p>
 <p>Since I didn't want to copy their method entirely, I chose to go for another keyword extraction method and stumbled upon YAKE. Now I switched back to a regular BERT model and summed the embeddings of the top 10 keywords, normalizing them as well. This resulted in the following TSNE plot:</p>
-<p><img alt="Final TSNE" src="../graphs/Final Test.png" /></p>
+<p><img alt="Final TSNE" src="../graphs/FinalTest.png" /></p>
 <p>While this doesn't look perfect, there definitely is more overlap between the embeddings. Without any other idea on how to improve my method, I decided to scale it to all 25,000 songs in my dataset. My intuition was that with a bigger sample size, we would have more individual songs that appear in the Wikipedia embeddings group.</p>
 <p>To visualize the final results, I added an interactive file called <code>tsne_plot.html</code> </p>
 <h2 id="matching">Matching</h2>
