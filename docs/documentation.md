@@ -28,12 +28,12 @@ Now I plug the result into a pretrained Sentence-BERT, sum the embedding of each
 
 To check if the Wikipedia and lyrics embeddings are close by, I decided to use a dimensionality reduction method called TSNE so I could plot them in a 2D space. When I tested it with a random selection of songs and Wikipedia articles, the result was rather humbling:
 
-![Test 1](../graphs/Test.png)
+![Test 1](graphs/Test.png)
 
 I played around a lot with the prompt and got similar results:
 
-![Test 2](../graphs/Test2.png)
-![Test 3](../graphs/Test3.png)
+![Test 2](graphs/Test2.png)
+![Test 3](graphs/Test3.png)
 
 ### Keywords to the Rescue
 
@@ -41,7 +41,7 @@ Clearly, a new approach was needed. I didn't want to change the whole pipeline, 
 
 Since I didn't want to copy their method entirely, I chose to go for another keyword extraction method and stumbled upon YAKE. Now I switched back to a regular BERT model and summed the embeddings of the top 10 keywords, normalizing them as well. This resulted in the following TSNE plot:
 
-![Final TSNE](<../graphs/Final Test.png>)
+![Final TSNE](graphs/FinalTest.png)
 
 While this doesn't look perfect, there definitely is more overlap between the embeddings. Without any other idea on how to improve my method, I decided to scale it to all 25,000 songs in my dataset. My intuition was that with a bigger sample size, we would have more individual songs that appear in the Wikipedia embeddings group.
 
