@@ -62,7 +62,7 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#matching">Matching</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#gussing-game">Gussing Game</a>
+    <li class="toctree-l2"><a class="reference internal" href="#guessing-game">Guessing Game</a>
     </li>
     </ul>
                 </li>
@@ -130,7 +130,7 @@
 <h2 id="matching">Matching</h2>
 <p>The final matching is rather easy. We only need a good metric to tell us which lyrics embedding is closest to our desired Wikipedia embedding. The main contenders are Euclidean distance and cosine similarity. I chose to go for cosine similarity because it seems to be the standard.</p>
 <p>To do the matching, I actually use a vector database called Pinecone. Pinecone is not only used to store all my 25,000 lyrics embeddings, but you can also query for an embedding and get the top k closest to the specified embedding. This basically gets the job done for the matching part.</p>
-<h2 id="gussing-game">Gussing Game</h2>
+<h2 id="guessing-game">Guessing Game</h2>
 <p>Thanks to the questioning of Laura at my final presentation, I decided to create a super simple guessing game where you try to outmatch the "AI" and find a more suitable song for a random Wikipedia article. You can find more about that on the installation and game tab.</p>
               
             </div>
