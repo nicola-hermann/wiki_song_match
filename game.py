@@ -5,6 +5,7 @@ import requests
 from pygame.locals import *
 from PIL import Image, ImageFilter
 import numpy as np
+import json
 
 background_image = Image.open(r"assets\background.png")
 blurred_background = background_image.filter(ImageFilter.GaussianBlur(10))
@@ -30,7 +31,8 @@ BLUE = (0, 120, 215)
 BACKGROUND_IMAGE = pygame.image.load(r"assets\blurred_background.png")
 BACKGROUND_IMAGE = pygame.transform.scale(BACKGROUND_IMAGE, (WIDTH, HEIGHT))
 
-BASE_URL = "http://127.0.0.1:5000"
+BASE_URL = "https://wikisongmatch-907921310754.europe-west12.run.app"
+# BASE_URL = "http://127.0.0.1:5000"
 
 
 overlay = pygame.Surface((WIDTH, HEIGHT))
@@ -159,12 +161,17 @@ def display_result_screen(screen, result, player_artist, player_title):
 
 # API call placeholders
 def match_request(url, result):
-    response = requests.get(url)
+    response = requests.get(url, timeout=100)
     result["response"] = response.json()
+    print("Request completed")
 
 
 def lyrics_request(url, data, result):
-    response = requests.post(url, json=data)
+    json_data = json.dumps(data)
+    print(json_data)
+    response = requests.post(
+        url, data=json_data, timeout=100, headers={"Content-Type": "application/json"}
+    )
     result["response"] = response.json()
 
 
