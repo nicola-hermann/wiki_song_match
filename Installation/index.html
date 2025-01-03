@@ -124,6 +124,17 @@ python scripts/load_embeddings_to_pinecone.py
 <pre><code>python scripts/generate_wikipedia_embeddings.py
 python scripts/create_tsne_plot.py
 </code></pre>
+<p>9) Optional: Host your own API</p>
+<pre><code>To host your own API with flask, you also need an API key for [Lyrics.com](https://www.lyrics.com/lyrics_api.php). Apply and wait for their email. In your .env append 2 more variables:
+
+
+
+    LYRICS_USER=&lt;YourUserID&gt;
+    LYRICS_TOKEN=&lt;YourToken&gt;
+</code></pre>
+<p>10) Optional: Deploy your own API on the cloud</p>
+<pre><code>To deploy the flask API on the Google Cloud, follow [this Tutorial](https://lesliemwubbel.com/setting-up-a-flask-app-and-deploying-it-via-google-cloud/)
+</code></pre>
 <p><strong>This process can take several hours!</strong></p>
 <p>Note: the first script can be interruped and resumed any time. Progress is saved every 100 steps.</p>
 <h2 id="guessing-game">Guessing Game</h2>
