@@ -1,9 +1,6 @@
 import pandas as pd
 import yake
 import wikipedia
-
-mode = "pc"  # or "local"
-
 from transformers import BertTokenizer, BertModel
 import torch
 import torch.nn.functional as F
@@ -15,26 +12,18 @@ from sklearn.neighbors import NearestNeighbors
 import numpy as np
 from dotenv import load_dotenv
 import os
+import argparse
 
 load_dotenv()
 
-if mode == "local":
-    lyrics_df = pd.read_feather("data\lyrics_embeddings.feather")
-    lyrics_embeddings = lyrics_df["embedding"].values
-    lyrics_embeddings = np.vstack(lyrics_embeddings)
 
-    knn = NearestNeighbors(n_neighbors=5)
-    knn.fit(lyrics_embeddings)
+from pinecone import Pinecone
 
-else:
-    from pinecone import Pinecone
-
-    api_key = os.environ.get("PINECONE_KEY")
-    pc = Pinecone(api_key=api_key)
-    index_name = "wiki-song-match"
-    index = pc.Index(index_name)
-    namespace = "lyrics_embedding"
-
+api_key = os.environ.get("PINECONE_KEY")
+pc = Pinecone(api_key=api_key)
+index_name = "wiki-song-match"
+index = pc.Index(index_name)
+namespace = "lyrics_embedding"
 
 # Download necessary resources
 nltk.download("stopwords")
@@ -86,7 +75,7 @@ def get_embedding(keyword):
     return outputs.last_hidden_state[:, 0, :]  # Use [CLS] token embedding
 
 
-def main(article):
+def query_article(article):
     try:
         text = wikipedia.page(article).content
     except:
@@ -118,22 +107,10 @@ def main(article):
     return keywords, torch_weights.tolist(), combined_embedding
 
 
-aritcle = "World War II"
-result = main(aritcle)
-if result is not None:
-    keywords, weights, combined_embedding = main(aritcle)
-    if mode == "local":
-        # Find the nearest neighbors
-        query_embedding = np.array([combined_embedding])
-        distances, indices = knn.kneighbors(query_embedding)
-
-        # Get the metadata for the nearest neighbors
-        nearest_neighbors = lyrics_df.iloc[indices[0]]
-        print(nearest_neighbors)
-        # print(nearest_neighbors["artist_name", "track_name", "release_date", "keywords"])
-        print(distances[0])
-        breakpoint()
-    else:
+def main(article):
+    result = query_article(article)
+    if result is not None:
+        keywords, weights, combined_embedding = result
 
         combined_embedding = [float(value) for value in combined_embedding]
 
@@ -158,5 +135,12 @@ if result is not None:
                 }
             )
         print(return_dict)
-else:
-    print("Error: No keywords extracted")
+    else:
+        print("Error: No keywords extracted")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--article", "-a", type=str, help="Article to search")
+    args = parser.parse_args()
+    main(args.article)
