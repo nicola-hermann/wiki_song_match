@@ -55,3 +55,12 @@ To do the matching, I actually use a vector database called Pinecone. Pinecone i
 ## Guessing Game
 
 Thanks to the questioning of Laura at my final presentation, I decided to create a super simple guessing game where you try to outmatch the "AI" and find a more suitable song for a random Wikipedia article. You can find more about that on the installation and game tab.
+
+## Additional Info
+
+A lot of the things are not listed here in detail. But to cover them really quickly, I created a bullet point list for all the things that have also been done to make this project work:
+
+- Dockerized code for cloud hosting.
+- Created and hosted an API on the cloud for easier access to play the game.
+- Created documentation using MkDocs that updates when code gets pushed.
+- Added an installation guide to recreate the deployment from start to finish.
