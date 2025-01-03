@@ -55,6 +55,11 @@ Note: the first script can be interruped and resumed any time. Progress is saved
     python scripts/generate_wikipedia_embeddings.py
     python scripts/create_tsne_plot.py
 
+
+**This process can take several hours!**
+
+Note: the first script can be interruped and resumed any time. Progress is saved every 100 steps.
+
 9) Optional: Host your own API
 
 To host your own API with flask, you also need an API key for [Lyrics.com](https://www.lyrics.com/lyrics_api.php). Apply and wait for their email. In your .env append 2 more variables:
@@ -68,9 +73,7 @@ To host your own API with flask, you also need an API key for [Lyrics.com](https
 
 To deploy the flask API on the Google Cloud, follow [this Tutorial](https://lesliemwubbel.com/setting-up-a-flask-app-and-deploying-it-via-google-cloud/)
 
-**This process can take several hours!**
 
-Note: the first script can be interruped and resumed any time. Progress is saved every 100 steps.
 
 ## Guessing Game
 
