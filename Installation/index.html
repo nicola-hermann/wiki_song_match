@@ -124,6 +124,8 @@ python scripts/load_embeddings_to_pinecone.py
 <pre><code>python scripts/generate_wikipedia_embeddings.py
 python scripts/create_tsne_plot.py
 </code></pre>
+<p><strong>This process can take several hours!</strong></p>
+<p>Note: the first script can be interruped and resumed any time. Progress is saved every 100 steps.</p>
 <p>9) Optional: Host your own API</p>
 <p>To host your own API with flask, you also need an API key for <a href="https://www.lyrics.com/lyrics_api.php">Lyrics.com</a>. Apply and wait for their email. In your .env append 2 more variables:</p>
 <pre><code>LYRICS_USER=&lt;YourUserID&gt;
@@ -131,8 +133,6 @@ LYRICS_TOKEN=&lt;YourToken&gt;
 </code></pre>
 <p>10) Optional: Deploy your own API on the cloud</p>
 <p>To deploy the flask API on the Google Cloud, follow <a href="https://lesliemwubbel.com/setting-up-a-flask-app-and-deploying-it-via-google-cloud/">this Tutorial</a></p>
-<p><strong>This process can take several hours!</strong></p>
-<p>Note: the first script can be interruped and resumed any time. Progress is saved every 100 steps.</p>
 <h2 id="guessing-game">Guessing Game</h2>
 <p><em>If you already did the Full Pipeline installation, skip to step 3.</em></p>
 <p>There are alot of ways to install a repository. The following instructions are testen on Windows and MacOS.</p>
